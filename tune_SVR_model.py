@@ -1,32 +1,33 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Aug 01 13:54:38 2017
+Spyder Editor
 
-@author: azfv1n8
+This is a temporary script file.
 """
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import cPickle as pickle
+
 
 from sklearn.linear_model import LinearRegression
 from sklearn.svm import SVR
-from sklearn.model_selection import cross_val_score, cross_val_predict
+from sklearn.model_selection import cross_val_score, cross_val_predict, GridSearchCV
 from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import make_scorer
 
 import pipeline as pl
+from mytimer import Timer
 from build_data_set import categorical_columns
 
-from mytimer import Timer
-
+    #%%
 
 def main():
-    #%%
-    
-    # focus on data relevant for day-ahead electricity trading
-    
+ 
+    # focus on data relevant for day-ahead electricity trading    
     df = pd.read_pickle('data/cleaned/assembled_data/cv_data.pkl')
     yX_columns = ['prod',
                  'prod_lag24or48',
@@ -57,31 +58,18 @@ def main():
     y = arr_scaled[:,0]
     X = arr_scaled[:,1:]
     
-    
     MLS_scorer = make_scorer(mean_squared_error, greater_is_better=False)
+    param_grid = {'C':[1.0, 10.0], 'gamma':[.01, .02]}
+    grid_search_estimator = GridSearchCV(SVR(), param_grid=param_grid, n_jobs=4, cv=6, scoring=MLS_scorer)
+    grid_search_estimator.fit(X,y)
     
-    #%% 6 fold cross validation on OLS regression
-    OLS_cv_scores = cross_val_score(LinearRegression(), X, y, scoring=MLS_scorer, cv=6)
-    OLS_cv_pred = cross_val_predict(LinearRegression(), X, y, cv=6)
+    with open('data/svr_gridsearch.pkl', 'w') as f:
+        pickle.dump(grid_search_estimator, f)
     
+    return grid_search_estimator
     
-    #%% No calendar info 6 fold cross validation on OLS regression
-    X_nocal = arr_scaled[:,1:6]
-    
-    OLS_cv_scores_nocal = cross_val_score(LinearRegression(), X_nocal, y, scoring=MLS_scorer, cv=6)
-    OLS_cv_pred_nocal = cross_val_predict(LinearRegression(), X_nocal, y, cv=6)
-    
-    #%% SVR experiments
-    
-    SVR_cv_pred = cross_val_predict(SVR(C=1., gamma=.02), X, y, cv=6, verbose=True, n_jobs=4)
-    
-    SVR_cv_err = mean_squared_error(y, SVR_cv_pred)
-    print "SVR_err:", SVR_cv_err
-    
-    return y, X, SVR_cv_pred
     
     
 if __name__=="__main__":
-    with Timer('new'):
+    with Timer('SVR tuning'):
         main()
-    
