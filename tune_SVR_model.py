@@ -59,11 +59,11 @@ def main():
     X = arr_scaled[:,1:]
     
     MLS_scorer = make_scorer(mean_squared_error, greater_is_better=False)
-    param_grid = {'C':[1.0, 10.0], 'gamma':[.01, .02]}
-    grid_search_estimator = GridSearchCV(SVR(), param_grid=param_grid, n_jobs=4, cv=6, scoring=MLS_scorer)
+    param_grid = {'C':[0.1, 10, 40], 'gamma':[.001, .02, 0.3]}
+    grid_search_estimator = GridSearchCV(SVR(), param_grid=param_grid, n_jobs=-1, cv=6, scoring=MLS_scorer)
     grid_search_estimator.fit(X,y)
     
-    with open('data/svr_gridsearch.pkl', 'w') as f:
+    with open('data/svr_gridsearch9pts.pkl', 'w') as f:
         pickle.dump(grid_search_estimator, f)
     
     return grid_search_estimator
