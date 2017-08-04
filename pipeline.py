@@ -37,10 +37,11 @@ def get_dummy_col_ix(Xdf_withdummies, dummy_columns):
     
 class StandardScalerIgnoreDummies(object):
     
-    def __init__(self, dummy_col_ix, standard_scaler):
+    def __init__(self, dummy_col_ix, standard_scaler, center_dummies=False):
         self.dummy_col_ix = dummy_col_ix
         self.standard_scaler = standard_scaler
-                 
+        self.center_dummies = center_dummies
+        
     
     def transform(self, X):        
         return self.__partial_tranformation__(X, cont_transform_func=self.standard_scaler.fit_transform)
@@ -73,7 +74,10 @@ class StandardScalerIgnoreDummies(object):
         X_res = np.empty_like(X)
         for i in range(X.shape[1]):
             if i in self.dummy_col_ix:
-                X_res[:,i] = X[:,i]
+                if not self.center_dummies:
+                    X_res[:,i] = X[:,i]
+                elif self.center_dummies:
+                    X_res[:,i] = 2*X[:,i] - 1 # This transformes [0, 1] to [-1, 1]
             elif i in cont_col_ix:
                 ix_in_cont_X_scaled = cont_col_ix.index(i)
                 X_res[:,i] = cont_X_scaled[:, ix_in_cont_X_scaled]
