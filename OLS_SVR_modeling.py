@@ -73,7 +73,7 @@ def main():
     
     #%% SVR experiments
 #    
-#    SVR_cv_pred = cross_val_predict(SVR(C=1., gamma=.02), X, y, cv=6, verbose=True, n_jobs=4)
+#    SVR_cv_pred = cross_val_predict(SVR(C=4.3, gamma=.02), X, y, cv=6, verbose=True, n_jobs=4)
 #    
 #    SVR_cv_err = mean_squared_error(y, SVR_cv_pred)
 #    print "SVR_err:", SVR_cv_err
