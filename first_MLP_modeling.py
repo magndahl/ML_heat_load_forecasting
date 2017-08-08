@@ -62,18 +62,24 @@ def main():
     
     MLS_scorer = make_scorer(mean_squared_error, greater_is_better=False)
     
-    mlp = MLPRegressor(max_iter=400, hidden_layer_sizes=(55,), random_state=1, alpha=0.01)
-    param_grid = {'activation':['tanh', 'logistic', 'relu']}
+    mlp = MLPRegressor(max_iter=400, random_state=1)
+    param_grid = {'activation':['relu'],
+                  'alpha':[0.5, 0.2, 0.1, 0.05, 0.001, 0.0001], 
+                  'hidden_layer_sizes':[(i,) for i in np.arange(10, 210, 10)]\
+                                        + [(i,j) for i in np.arange(10, 210, 10) for j in np.arange(10,210, 10)]}
     
-
     cv_gridsearch = GridSearchCV(mlp, param_grid, n_jobs=-1, cv=6, scoring=MLS_scorer, verbose=True)
     cv_gridsearch.fit(X,y)
-    with open('data/mlp_activation_search.pkl', 'wb') as f:
+    with open('data/mlp_double_layer_alpha_extensive.pkl', 'wb') as f:
         pickle.dump(cv_gridsearch, f)  
-        
-    cv_scores = cross_val_score(MLPRegressor(hidden_layer_sizes=(55,), alpha=0.001, random_state=1, solver='adam', max_iter=400), X, y, cv=6, scoring=MLS_scorer)
+       
+    mlp_choice = MLPRegressor(hidden_layer_sizes=(110,), alpha=0.1, random_state=1, solver='adam', max_iter=400)
+    cv_scores = cross_val_score(mlp_choice, X, y, cv=6, scoring=MLS_scorer)
     print cv_scores, cv_scores.mean()
     
+    cv_predict = cross_val_predict(mlp_choice, X, y, cv=6)
+    
+    return y, cv_predict
 
 
 if __name__=="__main__":
