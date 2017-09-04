@@ -35,8 +35,10 @@ def main():
                  'prod_lag24or48',
                  'prod_lag168',
                  'Tout',
+                 'Tout_lag4',
                  'vWind',
                  'sunRad',
+                 'sunRad_lag4',
                  'weekend',
                  'observance',
                  'national_holiday',
@@ -55,7 +57,7 @@ def main():
     
     scaler = pl.StandardScalerIgnoreDummies(dummy_column_ix, StandardScaler(), center_dummies=False)
     
-    arr_scaled = scaler.transform(arr_dict['array'])
+    arr_scaled = scaler.fit_transform(arr_dict['array'])
     
     y = arr_scaled[:,0]
     X = arr_scaled[:,1:]

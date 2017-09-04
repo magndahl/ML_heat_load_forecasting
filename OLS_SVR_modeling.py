@@ -32,8 +32,10 @@ def main():
                  'prod_lag24or48',
                  'prod_lag168',
                  'Tout',
+                 'Tout_lag4',
                  'vWind',
                  'sunRad',
+                 'sunRad_lag4',
                  'weekend',
                  'observance',
                  'national_holiday',
@@ -52,7 +54,7 @@ def main():
     
     scaler = pl.StandardScalerIgnoreDummies(dummy_column_ix, StandardScaler())
     
-    arr_scaled = scaler.transform(arr_dict['array'])
+    arr_scaled = scaler.fit_transform(arr_dict['array'])
     
     y = arr_scaled[:,0]
     X = arr_scaled[:,1:]
@@ -64,21 +66,23 @@ def main():
     OLS_cv_scores = cross_val_score(LinearRegression(), X, y, scoring=MLS_scorer, cv=6)
     OLS_cv_pred = cross_val_predict(LinearRegression(), X, y, cv=6)
     
+    sns.jointplot(x=y, y=OLS_cv_pred)
+    plt.title('MLR')
+    print "OLS score", OLS_cv_scores.mean()
     
-    #%% No calendar info 6 fold cross validation on OLS regression
-    X_nocal = arr_scaled[:,1:6]
     
-    OLS_cv_scores_nocal = cross_val_score(LinearRegression(), X_nocal, y, scoring=MLS_scorer, cv=6)
-    OLS_cv_pred_nocal = cross_val_predict(LinearRegression(), X_nocal, y, cv=6)
-    
-    #%% SVR experiments
-#    
-#    SVR_cv_pred = cross_val_predict(SVR(C=4.3, gamma=.02), X, y, cv=6, verbose=True, n_jobs=4)
-#    
-#    SVR_cv_err = mean_squared_error(y, SVR_cv_pred)
-#    print "SVR_err:", SVR_cv_err
-    
-    return y, X, scaler #, SVR_cv_pred
+    #%% SVR experiments'
+    runSVR = False
+    if runSVR:
+        SVR_cv_pred = cross_val_predict(SVR(C=4.3, gamma=.02), X, y, cv=6, verbose=True, n_jobs=4)
+        
+        SVR_cv_err = mean_squared_error(y, SVR_cv_pred)
+        print "SVR_err:", SVR_cv_err
+        
+        sns.jointplot(x=y, y=SVR_cv_pred)
+        plt.title('SVR')
+
+    return y, X, scaler#, SVR_cv_pred
     
     
 if __name__=="__main__":
