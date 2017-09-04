@@ -18,7 +18,7 @@ def main(save=False):
     if save:
         save_cv_and_test_data(df_full)
         
-    return
+    return df_full
     
 
 def assemble_dataset_no_dummies():
@@ -74,10 +74,24 @@ def load_Tout_col(df):
     return atlas_weather.ix[df.index, 'Tout']
 
 
+
+
 def load_vWind_col(df):
     atlas_weather = pd.read_pickle(load_path + 'RE_atlas_weather_1979_2016.pkl')
     
     return atlas_weather.ix[df.index, 'vWind']
+
+
+def Tout_lag4(df):
+    Tout = load_Tout_col(df)
+    
+    return Tout.shift(4).fillna(method='backfill')
+
+
+def sunRad_lag4(df):
+    sunRad = load_sunRad_col(df)
+    
+    return sunRad.shift(4).fillna(method='backfill')
 
 
 def load_sunRad_col(df):
@@ -160,8 +174,10 @@ all_col_retrievers = OrderedDict([('prod', load_cleaned_prod_col),
                                   ('prod_lag168', prod_lag168_col),
                                   ('prod_lag24or48', prod_lag24or48_col),
                                   ('Tout', load_Tout_col),
+                                  ('Tout_lag4', Tout_lag4),
                                   ('vWind', load_vWind_col),
                                   ('sunRad', load_sunRad_col),
+                                  ('sunRad_lag4', sunRad_lag4),
                                   ('weekend', is_weekend_col),
                                   ('observance', is_observance_col),
                                   ('national_holiday', is_national_holiday_col),
