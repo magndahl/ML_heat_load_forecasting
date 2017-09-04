@@ -43,8 +43,12 @@ class StandardScalerIgnoreDummies(object):
         self.center_dummies = center_dummies
         
     
-    def transform(self, X):        
+    def fit_transform(self, X):        
         return self.__partial_tranformation__(X, cont_transform_func=self.standard_scaler.fit_transform)
+    
+    
+    def transform(self, X):        
+        return self.__partial_tranformation__(X, cont_transform_func=self.standard_scaler.transform)
     
     
     def fit(self, X, y=None):
