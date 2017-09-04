@@ -33,8 +33,10 @@ def main():
                  'prod_lag24or48',
                  'prod_lag168',
                  'Tout',
+                 'Tout_lag4',
                  'vWind',
                  'sunRad',
+                 'sunRad_lag4',
                  'weekend',
                  'observance',
                  'national_holiday',
@@ -53,17 +55,17 @@ def main():
     
     scaler = pl.StandardScalerIgnoreDummies(dummy_column_ix, StandardScaler())
     
-    arr_scaled = scaler.transform(arr_dict['array'])
+    arr_scaled = scaler.fit_transform(arr_dict['array'])
     
     y = arr_scaled[:,0]
     X = arr_scaled[:,1:]
     
     MLS_scorer = make_scorer(mean_squared_error, greater_is_better=False)
-    param_grid = {'C':[0.1, 10, 40], 'gamma':[.001, .02, 0.3]}
+    param_grid = {'C':[1, 4.3], 'gamma':[.001, 0.01, .02]}
     grid_search_estimator = GridSearchCV(SVR(), param_grid=param_grid, n_jobs=-1, cv=6, scoring=MLS_scorer)
     grid_search_estimator.fit(X,y)
     
-    with open('data/svr_gridsearch9pts.pkl', 'w') as f:
+    with open('data/svr_gridsearch6pts.pkl', 'wb') as f:
         pickle.dump(grid_search_estimator, f)
     
     return grid_search_estimator
