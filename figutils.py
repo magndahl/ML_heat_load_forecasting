@@ -164,7 +164,7 @@ def perfect_real_fc_barplot():
     
     titles = {'perfectfc':'(a) Perfect weather forecasts', 'realfc':'(b) Real weather forecasts'}
     scores = {'perfectfc':rmses_perfectfc, 'realfc':rmses_realfc}
-    ocean_five = {'OLS':'#CC333F', 'MLP':'#EDC951', 'SVR':'#00A0B0'}
+    colors = {'OLS':'#1f77b4', 'MLP':'#ff7f0e', 'SVR':'#2ca02c'}#{'OLS':'#CC333F', 'MLP':'#EDC951', 'SVR':'#00A0B0'}
     offsets = {'OLS':-1, 'MLP':0, 'SVR':1}
     tick_labels = [sc_text[sc] for sc in scenarios]
     tick_pos = np.arange(len(tick_labels))      
@@ -175,7 +175,7 @@ def perfect_real_fc_barplot():
         for model in models:
             ax.bar(left=tick_pos+offsets[model]*bin_width, \
                    height=[scores[fc_type][sc][model] for sc in scenarios],
-                   color=ocean_five[model],
+                   color=colors[model],
                    width=bin_width, label=model)
         
         ax.legend(ncol=3)
@@ -284,7 +284,7 @@ def append_for_axisspace(xvals, yvals, space_factor=0.5):
     return new_xvals, new_yvals
 
 
-def err_dist_per_month(KDE=False):
+def err_dist_per_month():
     ocean_five = {'r':'#CC333F', 'y':'#EDC951', 'bl':'#00A0B0', 'br':'#6A4A3C', 'o':'#EB6841'}
 
     
@@ -323,17 +323,6 @@ def err_dist_per_month(KDE=False):
         ax.hist(err_tss[month], bins=bins, ec='k', fc=ocean_five['bl'], lw=0.3, normed=KDE, label='Histogram')
         ax.set_title(calendar.month_name[month], fontsize=10, fontweight='bold')
         
-        if KDE:
-            grid = GridSearchCV(KernelDensity(),
-                        {'bandwidth': np.linspace(1, 30, 30)},
-                        cv=3) # 20-fold cross-validation
-            grid.fit(err_tss[month][:,None])
-            
-            print month, grid.best_params_
-            kde = grid.best_estimator_
-            xplot = np.linspace(xmin, xmax, 200)
-            pdf = np.exp(kde.score_samples(xplot[:,None]))
-            kde_line, = ax.plot(xplot, pdf, c=ocean_five['y'], label='Kernel density estimate')
         ax.grid('on', linestyle=':')
         
         q10 = np.percentile(err_tss[month], 10.)
@@ -403,7 +392,7 @@ def holiday_err_barplot():
             mask = masks[daytype]
             err = root_mean_squared_error(true_prod[mask], pred_prod[sc][mask])
             err_dict[sc].append(err)
-            print daytype, sum(masks[daytype])
+            print daytype, sum(masks[daytype])/24.
             
         ax.bar(left=xtickpos + offsets[sc]*binwidth, height=err_dict[sc], fc=colors[sc], width=binwidth, label=sc_text[sc])
     ax.xaxis.set_ticks(xtickpos)
@@ -417,3 +406,37 @@ def holiday_err_barplot():
     fig.savefig(savepath + 'holiday_err_barplot.png', dpi=400)
     
     return test_df
+
+
+def create_month_err_table(save=False):
+    cv_df = pd.read_pickle('data/cleaned/assembled_data/cv_data.pkl')
+    test_df = pd.read_pickle('data/cleaned/assembled_data/test_data_real_fc.pkl')
+    cv_Xs, cv_ys, test_Xs, test_ys, scalers = prepare_cv_test_data(scenarios, cv_df, test_df)
+    
+    ytrue = test_ys['Sc3']
+    true_prod = pd.Series(scalers['Sc3'].inverse_transform_y(ytrue), index=test_df.index)
+    
+    with open('data/results/test_real_wfc_preds.pkl', 'r') as f:
+        preds_dict = pickle.load(f)
+    
+    pred = preds_dict['Sc3']['SVR']
+    pred_prod = pd.Series(scalers['Sc3'].inverse_transform_y(pred), index=test_df.index)
+    
+    df = pd.DataFrame(columns=['RMSE', 'ME', 'Q10', 'Q90', 'Q1', 'Q99', 'nQ10', 'nQ90', 'nQ1', 'nQ99',], index=[calendar.month_name[i] for i in range(1,13)])
+    for month in range(1,13):   
+        month_true_prod = true_prod[true_prod.index.month==month]
+        month_pred_prod = pred_prod[pred_prod.index.month==month]
+        
+        mix = calendar.month_name[month]
+        df.at[mix, 'RMSE'] = root_mean_squared_error(month_true_prod, month_pred_prod)
+        df.at[mix, 'ME'] = mean_error(month_true_prod, month_pred_prod)
+        err = month_pred_prod - month_true_prod
+        for q in [10, 90, 1, 99]:
+            df.at[mix, 'Q%i'%q] = np.percentile(err, q)
+            df.at[mix, 'nQ%i'%q] = np.percentile(err, q)/np.mean(month_true_prod)
+
+    print df    
+    if save:
+        df.to_excel('data/monthly_error_table.xls')
+    
+    return df
