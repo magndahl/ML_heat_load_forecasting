@@ -62,6 +62,16 @@ yX_columns = OrderedDict(
                          'school_holiday',
                          'hour',
                          'weekday',
+                         'month']),
+                ('Sc4', ['prod',
+                         'prod_lag24or48',
+                         'prod_lag168',
+                         'Tout',
+                         'Tout_lag4',
+                         'vWind',
+                         'weekend',
+                         'hour',
+                         'weekday',
                          'month'])])
           
         
@@ -93,7 +103,7 @@ def main():
         pickle.dump(result_scores, f)
     
             
-def build_scale_datasets(scenarios=yX_columns.keys()):
+def build_scale_datasets(scenarios=yX_columns.keys(), yX_columns=yX_columns):
     Xs = {}
     ys = {}
     scalers = {}

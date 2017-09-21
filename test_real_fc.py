@@ -22,7 +22,7 @@ from test_perfect_wfc import prepare_cv_test_data, test_scenarios, calc_scenario
 
 
 def main():
-    scenarios = ['Sc%i'%i for i in (1,2,3)]
+    scenarios = ['Sc%i'%i for i in (1,2,3,4)]
     cv_df = pd.read_pickle('data/cleaned/assembled_data/cv_data.pkl')
     test_df = pd.read_pickle('data/cleaned/assembled_data/test_data_real_fc.pkl')
     cv_Xs, cv_ys, test_Xs, test_ys, scalers = prepare_cv_test_data(scenarios, cv_df, test_df)

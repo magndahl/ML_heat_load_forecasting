@@ -25,11 +25,11 @@ from feature_extraction import yX_columns
 from mytimer import Timer
 
 
-
+    
 
 
 def main():
-    scenarios = ['Sc%i'%i for i in (1,2,3)]
+    scenarios = ['Sc%i'%i for i in (1,2,3,4)]
     
     cv_df = pd.read_pickle('data/cleaned/assembled_data/cv_data.pkl')
     test_df = pd.read_pickle('data/cleaned/assembled_data/test_data.pkl')
