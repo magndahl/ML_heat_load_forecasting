@@ -72,6 +72,15 @@ yX_columns = OrderedDict(
                          'weekend',
                          'hour',
                          'weekday',
+                         'month',]),
+                ('Sc5', ['prod',
+                         'prod_lag24or48',
+                         'prod_lag168',
+                         'Tout',
+                         'vWind',
+                         'weekend',
+                         'hour',
+                         'weekday',
                          'month'])])
           
         
